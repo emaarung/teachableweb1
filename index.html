@@ -2,92 +2,17 @@
 <html> 
 <head> 
 <meta charset="UTF-8"> 
-<title>Teachable Machine Webcam</title> 
+<title>Deteksi Wajah AI</title> 
 </head> 
 <body> 
-<h1>Deteksi Wajah</h1> 
-<button type="button" onclick="init()">Mulai Kamera</button> 
-<div><canvas id="canvas"></canvas></div> 
-<div id="label-container"></div> 
+<h1>Deteksi Ekspresi Wajah</h1> 
+<button type="button" onclick="init()" id="cameraBtn">Mulai Kamera</button> 
+<div><canvas id="canvas" width="200" height="200" style="border: 1px solid gray;"></canvas></div> 
+<div id="label-container" style="margin-top: 10px;"></div> 
 
-<!-- ✅ LOAD LIBRARY DENGAN CARA YANG LEBIH AMAN -->
-<script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8.6/dist/teachablemachine-image.min.js"></script>
-
-<script type="text/javascript">
-// ✅ TUNGGU LIBRARY LOAD DULU SEBELUM JALANKAN KODE
-function checkLibraryLoaded() {
-    if (typeof tmImage !== 'undefined') {
-        console.log("✅ Library Teachable Machine loaded!");
-        return true;
-    } else {
-        console.log("❌ Library belum loaded, coba lagi...");
-        setTimeout(checkLibraryLoaded, 500); // Cek lagi setelah 0.5 detik
-        return false;
-    }
-}
-
-// ✅ PANGGIL FUNGSI CHECK SAAT PAGE LOAD
-window.onload = function() {
-    checkLibraryLoaded();
-};
-
-const URL = "https://teachablemachine.withgoogle.com/models/FxY2sF72OV/"; 
-let model, webcam, labelContainer, maxPredictions; 
- 
-async function init() { 
-    console.log("Tombol ditekan!");
-    
-    // ✅ CEK DULU APAKAH LIBRARY SUDAH READY
-    if (typeof tmImage === 'undefined') {
-        document.getElementById("label-container").innerHTML = "Error: Library belum loaded, tunggu sebentar...";
-        console.error("tmImage is undefined!");
-        return;
-    }
-    
-    try {
-        console.log("Memulai load model...");
-        const modelURL = URL + "model.json"; 
-        const metadataURL = URL + "metadata.json"; 
-
-        // ✅ PASTIKAN MENGGUNAKAN tmImage YANG SUDAH DILOAD
-        model = await tmImage.load(modelURL, metadataURL); 
-        maxPredictions = model.getTotalClasses(); 
-        console.log("Model loaded! Jumlah kelas:", maxPredictions);
-
-        const flip = true; 
-        webcam = new tmImage.Webcam(200, 200, flip); 
-        await webcam.setup(); 
-        await webcam.play(); 
-        window.requestAnimationFrame(loop); 
-
-        document.getElementById("canvas").appendChild(webcam.canvas); 
-        labelContainer = document.getElementById("label-container"); 
-        for (let i = 0; i < maxPredictions; i++) { 
-            labelContainer.appendChild(document.createElement("div")); 
-        }
-        
-        console.log("✅ Kamera berhasil dijalankan!");
-        
-    } catch (error) {
-        console.error("Error detail:", error);
-        document.getElementById("label-container").innerHTML = "Error: " + error.message;
-    }
-} 
- 
-async function loop() { 
-    webcam.update(); 
-    await predict(); 
-    window.requestAnimationFrame(loop); 
-} 
- 
-async function predict() { 
-    const prediction = await model.predict(webcam.canvas); 
-    for (let i = 0; i < maxPredictions; i++) { 
-        const classPrediction = prediction[i].className + ": " + 
-        (prediction[i].probability * 100).toFixed(2) + "%"; 
-        labelContainer.childNodes[i].innerHTML = classPrediction; 
-    } 
-} 
-</script> 
-</body> 
-</html>
+<script>
+// ✅ FUNCTION UNTUK LOAD LIBRARY DENGAN MULTIPLE FALLBACK
+function loadTeachableMachineLibrary() {
+    return new Promise((resolve, reject) => {
+        const sources = [
+            'https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min
